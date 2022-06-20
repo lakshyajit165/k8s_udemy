@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: server-deployment
+spec:
+    replicas: 3
+    selector:
+        matchLabels:
+            component: server
+    template:
+        metadata:
+            labels:
+                component: server # should match the selector above
+        spec:
+            containers:
+                - name: server # this is the name of the container we wish to keep
+                  image: stephengrider/multi-server
+                  ports:
+                      - containerPort: 5000
+                  env:
+                      - name: REDIS_HOST
+                        value: redis-cluster-ip-service
+                      - name: REDIS_PORT
+                        value: "6379" # numbers under env section have to be wrapped in quotes
+                      - name: PGUSER
+                        value: postgres
+                      - name: PGHOST
+                        value: postgres-cluster-ip-service # same name defined in postgres-cluster-ip-service.yml
+                      - name: PGPORT
+                        value: "5432"
+                      - name: PGDATABASE
+                        value: postgres
+                      - name: PGPASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: pgpassword
+                                key: PGPASSWORD
